@@ -49,7 +49,11 @@ void Dispatcher::debugProc()
 
 		// access violation
 		if (dbgEvent->u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
+		{
 			processAccessV(dbgEvent);
+			terminateProc();
+			return;
+		}
 
 		// all other events
 		ContinueDebugEvent(dbgEvent->dwProcessId, dbgEvent->dwThreadId, DBG_CONTINUE);
@@ -59,7 +63,7 @@ void Dispatcher::debugProc()
 void Dispatcher::processAccessV(LPDEBUG_EVENT dbgEvent)
 {
 	System::Console::WriteLine("ACCESS VIOLATION!!");
-	terminateProc();
+	DebugActiveProcessStop(dbgEvent->dwProcessId);
 }
 
 void Dispatcher::timeoutEvent(Object ^source, System::Timers::ElapsedEventArgs ^e)
