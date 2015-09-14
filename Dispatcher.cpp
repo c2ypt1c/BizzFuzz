@@ -45,15 +45,14 @@ void Dispatcher::debugProc()
 
 		// exit process
 		if (dbgEvent->dwDebugEventCode == EXIT_PROCESS_DEBUG_EVENT)
+		{
+			DebugActiveProcessStop(pi->dwProcessId);
 			return;
+		}
 
 		// access violation
 		if (dbgEvent->u.Exception.ExceptionRecord.ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
-		{
 			processAccessV(dbgEvent);
-			terminateProc();
-			return;
-		}
 
 		// all other events
 		ContinueDebugEvent(dbgEvent->dwProcessId, dbgEvent->dwThreadId, DBG_CONTINUE);
@@ -63,7 +62,9 @@ void Dispatcher::debugProc()
 void Dispatcher::processAccessV(LPDEBUG_EVENT dbgEvent)
 {
 	System::Console::WriteLine("ACCESS VIOLATION!!");
-	DebugActiveProcessStop(dbgEvent->dwProcessId);
+	timer->Stop();
+	Console::ReadLine();
+	terminateProc();
 }
 
 void Dispatcher::timeoutEvent(Object ^source, System::Timers::ElapsedEventArgs ^e)
@@ -73,7 +74,7 @@ void Dispatcher::timeoutEvent(Object ^source, System::Timers::ElapsedEventArgs ^
 
 void Dispatcher::terminateProc()
 {
-	System::Console::WriteLine("Terminating process...");
 	timer->Stop();
+	System::Console::WriteLine("Terminating process...");
 	TerminateProcess(pi->hProcess, 0);
 }
